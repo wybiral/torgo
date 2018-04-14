@@ -51,8 +51,8 @@ func (c *Controller) Add(onion *Onion) error {
 		onion.PrivateKey = "BEST"
 	}
 	req += fmt.Sprintf("%s:%s ", onion.PrivateKeyType, onion.PrivateKey)
-	for remotePort, localPort := range onion.Ports {
-		req += fmt.Sprintf("Port=%d,%d ", remotePort, localPort)
+	for remotePort, localAddr := range onion.Ports {
+		req += fmt.Sprintf("Port=%d,%s ", remotePort, localAddr)
 	}
 	code, msg, err := c.makeRequest(req)
 	if err != nil {
