@@ -1,14 +1,18 @@
 package torgo
 
 import (
-	"net/textproto"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"net/textproto"
+	"strconv"
 	"strings"
 )
 
 type Controller struct {
-	conn *textproto.Conn
+	conn        *textproto.Conn
+	AuthMethods []string
+	CookieFile  string
 }
 
 func NewController(addr string) (*Controller, error) {
@@ -16,7 +20,12 @@ func NewController(addr string) (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Controller{conn: conn}, nil
+	c := &Controller{conn: conn}
+	err = c.getInfo()
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 func (c *Controller) makeRequest(request string) (int, string, error) {
@@ -29,12 +38,43 @@ func (c *Controller) makeRequest(request string) (int, string, error) {
 	return c.conn.ReadResponse(-1)
 }
 
-func (c *Controller) AuthenticateCookie() error {
-	cookie, err := ioutil.ReadFile("/var/run/tor/control.authcookie")
+func (c *Controller) getInfo() error {
+	code, msg, err := c.makeRequest("PROTOCOLINFO 1")
 	if err != nil {
 		return err
 	}
-	code, msg, err := c.makeRequest("AUTHENTICATE \"" + string(cookie) + `"`)
+	if code != 250 {
+		return fmt.Errorf("%d %s", code, msg)
+	}
+	lines := strings.Split(msg, "\n")
+	authPrefix := "AUTH METHODS="
+	cookiePrefix := "COOKIEFILE="
+	for _, line := range lines {
+		// Check for AUTH METHODS line
+		if strings.HasPrefix(line, authPrefix) {
+			line = line[len(authPrefix):]
+			parts := strings.SplitN(line, " ", 2)
+			c.AuthMethods = strings.Split(parts[0], ",")
+			// Check gor COOKIEFILE key/value
+			if strings.HasPrefix(parts[1], cookiePrefix) {
+				raw := parts[1][len(cookiePrefix):]
+				c.CookieFile, err = strconv.Unquote(raw)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Controller) AuthenticateCookie() error {
+	rawCookie, err := ioutil.ReadFile(c.CookieFile)
+	if err != nil {
+		return err
+	}
+	cookie := hex.EncodeToString(rawCookie)
+	code, msg, err := c.makeRequest("AUTHENTICATE " + cookie)
 	if err != nil {
 		return err
 	}
