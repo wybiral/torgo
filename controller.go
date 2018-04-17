@@ -21,7 +21,7 @@ func NewController(addr string) (*Controller, error) {
 		return nil, err
 	}
 	c := &Controller{conn: conn}
-	err = c.getInfo()
+	err = c.getProtocolInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (c *Controller) makeRequest(request string) (int, string, error) {
 	return c.conn.ReadResponse(250)
 }
 
-func (c *Controller) getInfo() error {
+func (c *Controller) getProtocolInfo() error {
 	_, msg, err := c.makeRequest("PROTOCOLINFO 1")
 	if err != nil {
 		return err
