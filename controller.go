@@ -35,16 +35,13 @@ func (c *Controller) makeRequest(request string) (int, string, error) {
 	}
 	c.conn.StartResponse(id)
 	defer c.conn.EndResponse(id)
-	return c.conn.ReadResponse(-1)
+	return c.conn.ReadResponse(250)
 }
 
 func (c *Controller) getInfo() error {
-	code, msg, err := c.makeRequest("PROTOCOLINFO 1")
+	_, msg, err := c.makeRequest("PROTOCOLINFO 1")
 	if err != nil {
 		return err
-	}
-	if code != 250 {
-		return fmt.Errorf("%d %s", code, msg)
 	}
 	lines := strings.Split(msg, "\n")
 	authPrefix := "AUTH METHODS="
@@ -52,6 +49,8 @@ func (c *Controller) getInfo() error {
 	for _, line := range lines {
 		// Check for AUTH METHODS line
 		if strings.HasPrefix(line, authPrefix) {
+			// This line should be in a format like:
+			/// AUTH METHODS=method1,method2,methodN COOKIEFILE=cookiefilepath
 			line = line[len(authPrefix):]
 			parts := strings.SplitN(line, " ", 2)
 			c.AuthMethods = strings.Split(parts[0], ",")
@@ -74,12 +73,9 @@ func (c *Controller) AuthenticateCookie() error {
 		return err
 	}
 	cookie := hex.EncodeToString(rawCookie)
-	code, msg, err := c.makeRequest("AUTHENTICATE " + cookie)
+	_, _, err = c.makeRequest("AUTHENTICATE " + cookie)
 	if err != nil {
 		return err
-	}
-	if code != 250 {
-		return fmt.Errorf("%d %s", code, msg)
 	}
 	return nil
 }
@@ -94,12 +90,9 @@ func (c *Controller) Add(onion *Onion) error {
 	for remotePort, localAddr := range onion.Ports {
 		req += fmt.Sprintf("Port=%d,%s ", remotePort, localAddr)
 	}
-	code, msg, err := c.makeRequest(req)
+	_, msg, err := c.makeRequest(req)
 	if err != nil {
 		return err
-	}
-	if code != 250 {
-		return fmt.Errorf("%d %s", code, msg)
 	}
 	lines := strings.Split(msg, "\n")
 	for _, line := range lines {
@@ -116,12 +109,9 @@ func (c *Controller) Add(onion *Onion) error {
 }
 
 func (c *Controller) Remove(onion *Onion) error {
-	code, msg, err := c.makeRequest("DEL_ONION " + onion.ServiceID)
+	_, _, err := c.makeRequest("DEL_ONION " + onion.ServiceID)
 	if err != nil {
 		return err
-	}
-	if code != 250 {
-		return fmt.Errorf("%d %s", code, msg)
 	}
 	return nil
 }
