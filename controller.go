@@ -55,7 +55,7 @@ func (c *Controller) getInfo() error {
 			parts := strings.SplitN(line, " ", 2)
 			c.AuthMethods = strings.Split(parts[0], ",")
 			// Check gor COOKIEFILE key/value
-			if strings.HasPrefix(parts[1], cookiePrefix) {
+			if len(parts) == 2 && strings.HasPrefix(parts[1], cookiePrefix) {
 				raw := parts[1][len(cookiePrefix):]
 				c.CookieFile, err = strconv.Unquote(raw)
 				if err != nil {
@@ -63,6 +63,23 @@ func (c *Controller) getInfo() error {
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func (c *Controller) AuthenticateNone() error {
+	_, _, err := c.makeRequest("AUTHENTICATE")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Controller) AuthenticatePassword(password string) error {
+	quoted := strconv.Quote(password)
+	_, _, err := c.makeRequest("AUTHENTICATE " + quoted)
+	if err != nil {
+		return err
 	}
 	return nil
 }
