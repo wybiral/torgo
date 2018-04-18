@@ -112,7 +112,7 @@ func (c *Controller) AuthenticateCookie() error {
 	return nil
 }
 
-func (c *Controller) Add(onion *Onion) error {
+func (c *Controller) AddOnion(onion *Onion) error {
 	req := "ADD_ONION "
 	if len(onion.PrivateKey) == 0 {
 		onion.PrivateKeyType = "NEW"
@@ -140,7 +140,7 @@ func (c *Controller) Add(onion *Onion) error {
 	return nil
 }
 
-func (c *Controller) Remove(onion *Onion) error {
+func (c *Controller) DeleteOnion(onion *Onion) error {
 	_, _, err := c.makeRequest("DEL_ONION " + onion.ServiceID)
 	if err != nil {
 		return err
