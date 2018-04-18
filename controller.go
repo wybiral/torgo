@@ -160,8 +160,11 @@ func (c *Controller) AuthenticateCookie() error {
 }
 
 // Add Onion hidden service. If no private key is supplied one will be
-// generated. Hidden service will use port mapping contained in Ports map. The
-// Address of the hidden service will be ServiceID + ".onion"
+// generated and the PrivateKeyType and PrivateKey properties will be set with
+// the newly generated one.
+// The hidden service will use port mapping contained in Ports map supplied.
+// ServiceID will be assigned based on the private key and will be the address
+// of this hidden service (without the ".onion" ending).
 func (c *Controller) AddOnion(onion *Onion) error {
 	req := "ADD_ONION "
 	if len(onion.PrivateKey) == 0 {
