@@ -67,6 +67,21 @@ func (c *Controller) getProtocolInfo() error {
 	return nil
 }
 
+func (c *Controller) GetVersion() (string, error) {
+	_, msg, err := c.makeRequest("GETINFO version")
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(msg, "\n")
+	for _, line := range lines {
+		parts := strings.SplitN(line, "=", 2)
+		if parts[0] == "version" {
+			return parts[1], nil
+		}
+	}
+	return "", fmt.Errorf("version not found")
+}
+
 func (c *Controller) AuthenticateNone() error {
 	_, _, err := c.makeRequest("AUTHENTICATE")
 	if err != nil {
