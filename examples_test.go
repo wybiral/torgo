@@ -47,7 +47,7 @@ func ExampleController_AddOnion() {
 }
 
 // Add onion and generate private key (using ED25519-V3 key if supported)
-func ExampleController_AddOnion() {
+func ExampleController_AddOnion_2() {
 	// Define onion that maps virtual port 80 to local port 8080
 	onion := &torgo.Onion{
 		Ports: map[int]string{
