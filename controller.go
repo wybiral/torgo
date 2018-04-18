@@ -12,11 +12,11 @@ import (
 // A Controller instance is a control port connection that provides methods for
 // communicating with Tor.
 type Controller struct {
-	// Array of available authentication methods
+	// Array of available authentication methods.
 	AuthMethods []string
-	// Cookie file path (empty if not available)
+	// Cookie file path (empty if not available).
 	CookieFile  string
-	// Text is a textproto.Conn to the control port
+	// Text is a textproto.Conn to the control port.
 	Text        *textproto.Conn
 }
 
@@ -190,9 +190,10 @@ func (c *Controller) AddOnion(onion *Onion) error {
 	return nil
 }
 
-// Delete an onion (stop hidden service created by this controller).
-func (c *Controller) DeleteOnion(onion *Onion) error {
-	_, _, err := c.makeRequest("DEL_ONION " + onion.ServiceID)
+// Delete an onion by its serviceID (stop hidden service created by this
+// controller).
+func (c *Controller) DeleteOnion(serviceID string) error {
+	_, _, err := c.makeRequest("DEL_ONION " + serviceID)
 	if err != nil {
 		return err
 	}
