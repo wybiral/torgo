@@ -15,9 +15,9 @@ type Controller struct {
 	// Array of available authentication methods.
 	AuthMethods []string
 	// Cookie file path (empty if not available).
-	CookieFile  string
+	CookieFile string
 	// Text is a textproto.Conn to the control port.
-	Text        *textproto.Conn
+	Text *textproto.Conn
 }
 
 // Returns a new Controller instance connecting to the control port at addr.

@@ -1,9 +1,9 @@
 package torgo_test
 
 import (
-	"log"
 	"fmt"
 	"github.com/wybiral/torgo"
+	"log"
 )
 
 var onion *torgo.Onion
