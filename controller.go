@@ -9,18 +9,24 @@ import (
 	"strings"
 )
 
+// A Controller instance is a control port connection that provides methods for
+// communicating with Tor.
 type Controller struct {
-	conn        *textproto.Conn
+	// Array of available authentication methods
 	AuthMethods []string
+	// Cookie file path (empty if not available)
 	CookieFile  string
+	// Text is a textproto.Conn to the control port
+	Text        *textproto.Conn
 }
 
+// Returns a new Controller instance connecting to the control port at addr.
 func NewController(addr string) (*Controller, error) {
-	conn, err := textproto.Dial("tcp", addr)
+	text, err := textproto.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
-	c := &Controller{conn: conn}
+	c := &Controller{Text: text}
 	err = c.getProtocolInfo()
 	if err != nil {
 		return nil, err
@@ -29,13 +35,13 @@ func NewController(addr string) (*Controller, error) {
 }
 
 func (c *Controller) makeRequest(request string) (int, string, error) {
-	id, err := c.conn.Cmd(request)
+	id, err := c.Text.Cmd(request)
 	if err != nil {
 		return 0, "", err
 	}
-	c.conn.StartResponse(id)
-	defer c.conn.EndResponse(id)
-	return c.conn.ReadResponse(250)
+	c.Text.StartResponse(id)
+	defer c.Text.EndResponse(id)
+	return c.Text.ReadResponse(250)
 }
 
 func (c *Controller) getProtocolInfo() error {
@@ -67,21 +73,60 @@ func (c *Controller) getProtocolInfo() error {
 	return nil
 }
 
-func (c *Controller) GetVersion() (string, error) {
-	_, msg, err := c.makeRequest("GETINFO version")
+func (c *Controller) getInfo(key string) (string, error) {
+	_, msg, err := c.makeRequest("GETINFO " + key)
 	if err != nil {
 		return "", err
 	}
 	lines := strings.Split(msg, "\n")
 	for _, line := range lines {
 		parts := strings.SplitN(line, "=", 2)
-		if parts[0] == "version" {
+		if parts[0] == key {
 			return parts[1], nil
 		}
 	}
-	return "", fmt.Errorf("version not found")
+	return "", fmt.Errorf(key + " not found")
 }
 
+func (c *Controller) getInfoInt(key string) (int, error) {
+	s, err := c.getInfo(key)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(s)
+}
+
+// Return current external IP address.
+func (c *Controller) GetAddress() (string, error) {
+	return c.getInfo("address")
+}
+
+// Return total bytes downloaded.
+func (c *Controller) GetBytesRead() (int, error) {
+	return c.getInfoInt("traffic/read")
+}
+
+// Return total bytes uploaded.
+func (c *Controller) GetBytesWritten() (int, error) {
+	return c.getInfoInt("traffic/written")
+}
+
+// Return path to Tor config file.
+func (c *Controller) GetConfigFile() (string, error) {
+	return c.getInfo("config-file")
+}
+
+// Return PID for current Tor process.
+func (c *Controller) GetTorPid() (int, error) {
+	return c.getInfoInt("process/pid")
+}
+
+// Return version of Tor server.
+func (c *Controller) GetVersion() (string, error) {
+	return c.getInfo("version")
+}
+
+// Authenticate to controller without password or cookie.
 func (c *Controller) AuthenticateNone() error {
 	_, _, err := c.makeRequest("AUTHENTICATE")
 	if err != nil {
@@ -90,6 +135,7 @@ func (c *Controller) AuthenticateNone() error {
 	return nil
 }
 
+// Authenticate to controller with password.
 func (c *Controller) AuthenticatePassword(password string) error {
 	quoted := strconv.Quote(password)
 	_, _, err := c.makeRequest("AUTHENTICATE " + quoted)
@@ -99,6 +145,7 @@ func (c *Controller) AuthenticatePassword(password string) error {
 	return nil
 }
 
+// Authenticate to controller with cookie from current CookieFile path.
 func (c *Controller) AuthenticateCookie() error {
 	rawCookie, err := ioutil.ReadFile(c.CookieFile)
 	if err != nil {
@@ -112,6 +159,9 @@ func (c *Controller) AuthenticateCookie() error {
 	return nil
 }
 
+// Add Onion hidden service. If no private key is supplied one will be
+// generated. Hidden service will use port mapping contained in Ports map. The
+// Address of the hidden service will be ServiceID + ".onion"
 func (c *Controller) AddOnion(onion *Onion) error {
 	req := "ADD_ONION "
 	if len(onion.PrivateKey) == 0 {
@@ -140,6 +190,7 @@ func (c *Controller) AddOnion(onion *Onion) error {
 	return nil
 }
 
+// Delete an onion (stop hidden service created by this controller).
 func (c *Controller) DeleteOnion(onion *Onion) error {
 	_, _, err := c.makeRequest("DEL_ONION " + onion.ServiceID)
 	if err != nil {
