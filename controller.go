@@ -60,7 +60,7 @@ func (c *Controller) getProtocolInfo() error {
 			line = line[len(authPrefix):]
 			parts := strings.SplitN(line, " ", 2)
 			c.AuthMethods = strings.Split(parts[0], ",")
-			// Check gor COOKIEFILE key/value
+			// Check for COOKIEFILE key/value
 			if len(parts) == 2 && strings.HasPrefix(parts[1], cookiePrefix) {
 				raw := parts[1][len(cookiePrefix):]
 				c.CookieFile, err = strconv.Unquote(raw)
