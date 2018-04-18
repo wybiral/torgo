@@ -1,2 +1,2 @@
 # torgo
-Golang tools for working with Tor hidden services
+Provides a Golang controller interface for Tor.
