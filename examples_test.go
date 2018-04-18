@@ -31,11 +31,31 @@ func ExampleController_DeleteOnion() {
 	}
 }
 
+// Add onion and generate private key
 func ExampleController_AddOnion() {
 	// Define onion that maps virtual port 80 to local port 8080
 	onion := &torgo.Onion{Ports: map[int]string{
 		80: "127.0.0.1:8080",
 	}}
+	// Add onion to controller
+	err := controller.AddOnion(onion)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Print onion ID (address without ".onion" ending)
+	fmt.Println(onion.ServiceID)
+}
+
+// Add onion and generate private key (using ED25519-V3 key if supported)
+func ExampleController_AddOnion() {
+	// Define onion that maps virtual port 80 to local port 8080
+	onion := &torgo.Onion{
+		Ports: map[int]string{
+			80: "127.0.0.1:8080",
+		},
+		PrivateKeyType: "NEW",
+		PrivateKey:     "ED25519-V3",
+	}
 	// Add onion to controller
 	err := controller.AddOnion(onion)
 	if err != nil {
