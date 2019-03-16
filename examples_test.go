@@ -2,8 +2,9 @@ package torgo_test
 
 import (
 	"fmt"
-	"github.com/wybiral/torgo"
 	"log"
+
+	"github.com/wybiral/torgo"
 )
 
 var onion *torgo.Onion
@@ -138,4 +139,20 @@ func ExampleController_AddOnion_ed25519() {
 	}
 	// Print onion ID (address without ".onion" ending)
 	fmt.Println(onion.ServiceID)
+}
+
+// Send signal to reload configuration.
+func ExampleController_Signal_reload() {
+	err := controller.Signal("RELOAD")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Send NEWSYM signal to switch to new clean circuits.
+func ExampleController_Signal_newnym() {
+	err := controller.Signal("NEWNYM")
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -204,3 +204,23 @@ func (c *Controller) DeleteOnion(serviceID string) error {
 	}
 	return nil
 }
+
+// Signal sends a signal to the server. Tor documentations defines the
+// following signals :
+//   * RELOAD
+//   * SHUTDOWN
+//   * DUMP
+//   * DEBUG
+//   * HALT
+//   * CLEARDNSCACHE
+//   * NEWNYM
+//   * HEARTBEAT
+//   * DORMANT
+//   * ACTIVE
+func (c *Controller) Signal(signal string) error {
+	_, _, err := c.makeRequest("SIGNAL " + signal)
+	if err != nil {
+		return err
+	}
+	return nil
+}
