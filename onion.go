@@ -1,6 +1,6 @@
 package torgo
 
-// Represents a hidden service.
+// Onion represents a hidden service.
 type Onion struct {
 	// Ports maps virtual ports for the hidden service to local addresses.
 	Ports map[int]string

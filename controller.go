@@ -20,7 +20,8 @@ type Controller struct {
 	Text *textproto.Conn
 }
 
-// Returns a new Controller instance connecting to the control port at addr.
+// NewController returns a new Controller instance connecting to the control
+// port at addr.
 func NewController(addr string) (*Controller, error) {
 	text, err := textproto.Dial("tcp", addr)
 	if err != nil {
@@ -96,37 +97,37 @@ func (c *Controller) getInfoInt(key string) (int, error) {
 	return strconv.Atoi(s)
 }
 
-// Return current external IP address.
+// GetAddress returns the current external IP address.
 func (c *Controller) GetAddress() (string, error) {
 	return c.getInfo("address")
 }
 
-// Return total bytes downloaded.
+// GetBytesRead returns total bytes downloaded.
 func (c *Controller) GetBytesRead() (int, error) {
 	return c.getInfoInt("traffic/read")
 }
 
-// Return total bytes uploaded.
+// GetBytesWritten returns total bytes uploaded.
 func (c *Controller) GetBytesWritten() (int, error) {
 	return c.getInfoInt("traffic/written")
 }
 
-// Return path to Tor config file.
+// GetConfigFile return path to Tor config file.
 func (c *Controller) GetConfigFile() (string, error) {
 	return c.getInfo("config-file")
 }
 
-// Return PID for current Tor process.
+// GetTorPid returns PID for current Tor process.
 func (c *Controller) GetTorPid() (int, error) {
 	return c.getInfoInt("process/pid")
 }
 
-// Return version of Tor server.
+// GetVersion returns version of Tor server.
 func (c *Controller) GetVersion() (string, error) {
 	return c.getInfo("version")
 }
 
-// Authenticate to controller without password or cookie.
+// AuthenticateNone authenticate to controller without password or cookie.
 func (c *Controller) AuthenticateNone() error {
 	_, _, err := c.makeRequest("AUTHENTICATE")
 	if err != nil {
@@ -135,7 +136,7 @@ func (c *Controller) AuthenticateNone() error {
 	return nil
 }
 
-// Authenticate to controller with password.
+// AuthenticatePassword authenticate to controller with password.
 func (c *Controller) AuthenticatePassword(password string) error {
 	quoted := strconv.Quote(password)
 	_, _, err := c.makeRequest("AUTHENTICATE " + quoted)
@@ -145,7 +146,8 @@ func (c *Controller) AuthenticatePassword(password string) error {
 	return nil
 }
 
-// Authenticate to controller with cookie from current CookieFile path.
+// AuthenticateCookie authenticate to controller with cookie from current
+// CookieFile path.
 func (c *Controller) AuthenticateCookie() error {
 	rawCookie, err := ioutil.ReadFile(c.CookieFile)
 	if err != nil {
@@ -159,9 +161,9 @@ func (c *Controller) AuthenticateCookie() error {
 	return nil
 }
 
-// Add Onion hidden service. If no private key is supplied one will be
-// generated and the PrivateKeyType and PrivateKey properties will be set with
-// the newly generated one.
+// AddOnion adds Onion hidden service. If no private key is supplied one will
+// be generated and the PrivateKeyType and PrivateKey properties will be set
+// with the newly generated one.
 // The hidden service will use port mapping contained in Ports map supplied.
 // ServiceID will be assigned based on the private key and will be the address
 // of this hidden service (without the ".onion" ending).
@@ -193,8 +195,8 @@ func (c *Controller) AddOnion(onion *Onion) error {
 	return nil
 }
 
-// Delete an onion by its serviceID (stop hidden service created by this
-// controller).
+// DeleteOnion deletes an onion by its serviceID (stop hidden service created
+// by this controller).
 func (c *Controller) DeleteOnion(serviceID string) error {
 	_, _, err := c.makeRequest("DEL_ONION " + serviceID)
 	if err != nil {
