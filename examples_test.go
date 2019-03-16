@@ -2,7 +2,9 @@ package torgo_test
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/wybiral/torgo"
 )
@@ -155,4 +157,20 @@ func ExampleController_Signal_newnym() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Create a new Tor SOCKS HTTP client and request current IP from httpbin.org.
+func ExampleNewClient_httpget() {
+	// Create client from SOCKS proxy address
+	client, err := torgo.NewClient("127.0.0.1:9050")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Perform HTTP GET request
+	resp, err := client.Get("http://httpbin.org/ip")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Copy response to Stdout
+	io.Copy(os.Stdout, resp.Body)
 }
