@@ -5,7 +5,7 @@ This is a Go library for interacting with Tor over the standard controller inter
 
 ## "Hello world" ephemeral hidden service
 
-This program will generate a random 
+This program will generate a random onion address and route a local "Hello world" response server to that hidden service. The service is ephemeral so that no directory or configuration changes are required and it stops serving once the process has been ended.
 
 ```go
 package main
