@@ -36,6 +36,7 @@ func NewController(addr string) (*Controller, error) {
 	return c, nil
 }
 
+// Make a textproto request and expect the command to have a valid 250 status.
 func (c *Controller) makeRequest(request string) (int, string, error) {
 	id, err := c.Text.Cmd(request)
 	if err != nil {
@@ -46,6 +47,7 @@ func (c *Controller) makeRequest(request string) (int, string, error) {
 	return c.Text.ReadResponse(250)
 }
 
+// Perform PROTOCOLINFO command and parse the response.
 func (c *Controller) getProtocolInfo() error {
 	_, msg, err := c.makeRequest("PROTOCOLINFO 1")
 	if err != nil {
@@ -75,6 +77,7 @@ func (c *Controller) getProtocolInfo() error {
 	return nil
 }
 
+// Perform GETINFO command based on key.
 func (c *Controller) getInfo(key string) (string, error) {
 	_, msg, err := c.makeRequest("GETINFO " + key)
 	if err != nil {
@@ -90,6 +93,7 @@ func (c *Controller) getInfo(key string) (string, error) {
 	return "", fmt.Errorf(key + " not found")
 }
 
+// Perform GETINFO command and convert response to int.
 func (c *Controller) getInfoInt(key string) (int, error) {
 	s, err := c.getInfo(key)
 	if err != nil {
