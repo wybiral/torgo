@@ -2,6 +2,7 @@ package torgo
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/textproto"
@@ -168,6 +169,12 @@ func (c *Controller) AuthenticateCookie() error {
 // ServiceID will be assigned based on the private key and will be the address
 // of this hidden service (without the ".onion" ending).
 func (c *Controller) AddOnion(onion *Onion) error {
+	if onion == nil {
+		return errors.New("torgo: onion cannot be nil")
+	}
+	if len(onion.Ports) == 0 {
+		return errors.New("torgo: onion requires at least one port mapping")
+	}
 	req := "ADD_ONION "
 	if len(onion.PrivateKey) == 0 {
 		onion.PrivateKeyType = "NEW"

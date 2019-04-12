@@ -1,16 +1,22 @@
 package torgo_test
 
 import (
+	"crypto/rsa"
 	"fmt"
 	"io"
 	"log"
 	"os"
 
 	"github.com/wybiral/torgo"
+	"golang.org/x/crypto/ed25519"
 )
 
 var onion *torgo.Onion
 var controller *torgo.Controller
+var privateKeyRSA *rsa.PrivateKey
+var publicKeyRSA *rsa.PublicKey
+var privateKeyEd25519 ed25519.PrivateKey
+var publicKeyEd25519 ed25519.PublicKey
 
 // Return a new Controller interface.
 func ExampleNewController() {
@@ -173,4 +179,54 @@ func ExampleNewClient_httpget() {
 	}
 	// Copy response to Stdout
 	io.Copy(os.Stdout, resp.Body)
+}
+
+// Create an Onion and start hidden service from an ed25519.PrivateKey.
+func ExampleOnionFromEd25519() {
+	// Create Onion from private key (does not start hidden service)
+	onion, err := torgo.OnionFromEd25519(privateKeyEd25519)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Set port mapping from hidden service 80 to localhost:8080
+	onion.Ports[80] = "localhost:8080"
+	// Print service ID for Onion
+	fmt.Println(onion.ServiceID)
+	// Start hidden service
+	controller.AddOnion(onion)
+}
+
+// Calculate Tor service ID from ed25519.PublicKey.
+func ExampleServiceIDFromEd25519() {
+	// Calculate service ID
+	serviceID, err := torgo.ServiceIDFromEd25519(publicKeyEd25519)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(serviceID)
+}
+
+// Create an Onion and start hidden service from an rsa.PrivateKey.
+func ExampleOnionFromRSA() {
+	// Create Onion from private key (does not start hidden service)
+	onion, err := torgo.OnionFromRSA(privateKeyRSA)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Set port mapping from hidden service 80 to localhost:8080
+	onion.Ports[80] = "localhost:8080"
+	// Print service ID for Onion
+	fmt.Println(onion.ServiceID)
+	// Start hidden service
+	controller.AddOnion(onion)
+}
+
+// Calculate Tor service ID from *rsa.PublicKey.
+func ExampleServiceIDFromRSA() {
+	// Calculate service ID
+	serviceID, err := torgo.ServiceIDFromRSA(publicKeyRSA)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(serviceID)
 }
