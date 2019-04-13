@@ -180,9 +180,14 @@ func (c *Controller) AddOnion(onion *Onion) error {
 		return errors.New("torgo: onion requires at least one port mapping")
 	}
 	req := "ADD_ONION "
+	// If no key is supplied set PrivateKeyType to NEW
 	if len(onion.PrivateKey) == 0 {
+		if onion.PrivateKeyType == "" {
+			onion.PrivateKey = "BEST"
+		} else {
+			onion.PrivateKey = onion.PrivateKeyType
+		}
 		onion.PrivateKeyType = "NEW"
-		onion.PrivateKey = "BEST"
 	}
 	req += fmt.Sprintf("%s:%s ", onion.PrivateKeyType, onion.PrivateKey)
 	for remotePort, localAddr := range onion.Ports {
