@@ -240,3 +240,14 @@ func (c *Controller) Signal(signal string) error {
 	}
 	return nil
 }
+
+func (c *Controller) SetConf(param, value string) error {
+	newParamStr := param + "=" + "\"" + value + "\""
+
+	query := strings.Join([]string{"SETCONF", newParamStr}, " ")
+	_, _, err := c.makeRequest(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
