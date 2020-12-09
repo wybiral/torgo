@@ -193,6 +193,7 @@ func (c *Controller) AddOnion(onion *Onion) error {
 	for _, remotePort := range onion.sortedRemotePorts() {
 		req += fmt.Sprintf("Port=%d,%s ", remotePort, onion.Ports[remotePort])
 	}
+	req = strings.TrimSuffix(req, " ")
 	_, msg, err := c.makeRequest(req)
 	if err != nil {
 		return err
